@@ -1,0 +1,1158 @@
+código da analise
+
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#FAF7F2;--warm:#F5EFE4;--dark:#1C1410;
+  --gold:#C4973A;--gold-pale:#FAEEDA;
+  --green:#1D6B4F;--green-pale:#E1F5EE;
+  --purple:#4A3580;--purple-pale:#EEEDFE;
+  --rose:#C4537E;--rose-pale:#FBEAF0;
+  --text:#1A1210;--text-sec:#3A2E20;--text-ter:#7A6A54;--border:#E8DDD0;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+.app{max-width:480px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;padding:0 1rem 2rem}
+.header{text-align:center;padding:1.75rem 0 1rem;border-bottom:1px solid var(--border);margin-bottom:1.25rem;position:relative}
+.header::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:60px;height:3px;background:linear-gradient(90deg,var(--gold),var(--green));border-radius:0 0 4px 4px}
+.logo{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:500;color:var(--dark);letter-spacing:0.02em}
+.logo span{color:var(--green)}
+.tagline{font-size:11px;color:var(--text-ter);margin-top:5px;letter-spacing:0.06em;text-transform:uppercase}
+.progress{display:flex;gap:4px;justify-content:center;margin:0.75rem 0 0}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--border);transition:all .4s ease}
+.dot.done{background:var(--green)}.dot.active{background:var(--gold);transform:scale(1.4)}
+.chat{flex:1;display:flex;flex-direction:column;gap:12px;padding:0.5rem 0 1.5rem}
+.msg{max-width:88%;padding:12px 16px;border-radius:18px;font-size:14px;line-height:1.65;animation:fadeUp .35s ease forwards;opacity:0}
+.msg.bot{background:#fff;color:var(--text);border:1px solid var(--border);border-bottom-left-radius:4px;align-self:flex-start;box-shadow:0 2px 8px rgba(28,20,16,0.05)}
+.msg.user{background:linear-gradient(135deg,var(--dark),#3A2810);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.opts{display:flex;flex-direction:column;gap:8px;margin-top:4px;animation:fadeUp .35s ease forwards;opacity:0}
+.opt{background:#fff;border:1px solid var(--border);border-radius:12px;padding:11px 15px;font-size:13.5px;color:var(--dark);cursor:pointer;text-align:left;transition:all .2s ease;display:flex;align-items:flex-start;gap:11px;font-family:'DM Sans',sans-serif}
+.opt:hover{border-color:var(--gold);background:var(--warm);transform:translateX(3px)}
+.opt-label{font-weight:500}.opt-desc{font-size:11.5px;color:var(--text-ter);margin-top:2px}
+.name-input{display:flex;gap:8px;animation:fadeUp .35s ease forwards;opacity:0}
+.name-input input{flex:1;padding:11px 15px;border:1px solid var(--border);border-radius:12px;font-size:14px;font-family:'DM Sans',sans-serif;background:#fff;color:var(--dark);outline:none;transition:border-color .2s}
+.name-input input:focus{border-color:var(--gold)}
+.name-input button{padding:11px 18px;background:linear-gradient(135deg,var(--dark),#3A2810);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .2s}
+.name-input button:hover{opacity:.9}
+.loading{display:flex;gap:5px;align-items:center;padding:12px 16px;background:#fff;border:1px solid var(--border);border-radius:18px;border-bottom-left-radius:4px;align-self:flex-start;animation:fadeUp .3s ease forwards;opacity:0}
+.loading span{width:7px;height:7px;border-radius:50%;background:var(--gold);animation:bounce .9s infinite}
+.loading span:nth-child(2){animation-delay:.18s}.loading span:nth-child(3){animation-delay:.36s}
+.badge-wrap{animation:fadeUp .3s ease forwards;opacity:0}
+.badge{font-size:10px;font-weight:600;padding:3px 10px;border-radius:20px;display:inline-block;margin-bottom:4px;letter-spacing:0.06em;text-transform:uppercase}
+.bp{background:var(--purple-pale);color:#3C3489}.bt{background:var(--green-pale);color:#085041}
+.ba{background:var(--gold-pale);color:#633806}.bv{background:var(--rose-pale);color:#8B2252}
+.result{background:#fff;border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-top:6px;font-size:13.5px;line-height:1.85;color:var(--text);box-shadow:0 4px 24px rgba(29,107,79,0.08);animation:fadeUp .4s ease forwards;opacity:0}
+.result-intro{text-align:center;padding:1rem 0 1.5rem;border-bottom:1px solid var(--border);margin-bottom:1rem}
+.result-intro h2{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--dark);margin-bottom:0.35rem}
+.result-intro .sub{font-size:11px;color:var(--text-ter);letter-spacing:0.06em;text-transform:uppercase}
+.result h3{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;margin:1.5rem 0 0.75rem;padding:8px 14px;border-radius:8px}
+.result h3:first-of-type{margin-top:0}
+.result h3.r{background:var(--purple-pale);color:#3C3489}
+.result h3.c{background:var(--green-pale);color:#085041}
+.result h3.v{background:var(--gold-pale);color:#633806}
+.result h3.e{background:var(--rose-pale);color:#8B2252}
+.result h3.b{background:#F0EBE4;color:#4A3E2C}
+.result p{margin-bottom:0.75rem;color:var(--text-sec);font-size:13px}
+.result-ilustra{background:var(--cream);border-radius:10px;padding:0.85rem;margin:0.9rem 0;text-align:center}
+.result-ilustra svg{max-width:100%}
+.result-ilustra .cap{font-size:11px;color:var(--text-ter);margin-top:0.5rem;font-style:italic}
+.result-ilustra .subtitle{font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--text-ter);margin-bottom:0.5rem}
+.ilustra-grid{display:flex;gap:10px;justify-content:center;align-items:flex-end;flex-wrap:wrap}
+.ilustra-item{display:flex;flex-direction:column;align-items:center;gap:4px}
+.ilustra-label{font-size:10px;color:var(--text-ter);text-align:center;max-width:75px;line-height:1.3}
+.conceito-box{background:linear-gradient(135deg,#FFF8EC,#FAF0D9);border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:0.9rem 1rem;margin:1rem 0;font-style:italic;font-size:13px;color:var(--text-sec);line-height:1.7}
+.conceito-box strong{color:var(--dark);font-style:normal}
+.save-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--dark),#3A2810);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;margin-top:1.25rem;font-family:'DM Sans',sans-serif;transition:opacity .2s}
+.save-btn:hover{opacity:.9}
+.btn-whats{width:100%;padding:13px;background:linear-gradient(135deg,#1A7C3E,#25A352);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;margin-top:0.75rem;font-family:'DM Sans',sans-serif;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none}
+.btn-whats:hover{opacity:.9}
+.btn-upsell{width:100%;padding:13px;background:var(--warm);color:var(--dark);border:1.5px solid var(--gold);border-radius:12px;font-size:13.5px;font-weight:500;cursor:pointer;margin-top:0.75rem;font-family:'DM Sans',sans-serif;transition:all .2s;text-align:center;text-decoration:none;display:block}
+.btn-upsell:hover{background:var(--gold-pale);border-color:var(--dark)}
+.feedback-card{background:linear-gradient(135deg,#FFF8EC,#FAF0D9);border:1.5px solid var(--gold);border-radius:14px;padding:1.25rem;margin-top:1.25rem}
+.feedback-card h4{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--dark);margin-bottom:0.35rem}
+.feedback-card .fb-sub{font-size:12px;color:var(--text-ter);margin-bottom:1rem;line-height:1.55}
+.feedback-card input[type=text],.feedback-card textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;background:#fff;color:var(--dark);outline:none;transition:border-color .2s;margin-bottom:0.6rem;resize:vertical}
+.feedback-card input[type=text]:focus,.feedback-card textarea:focus{border-color:var(--gold)}
+.feedback-card textarea{min-height:85px;line-height:1.5}
+.feedback-card .fb-auth{display:flex;flex-direction:column;gap:6px;margin-bottom:0.85rem;font-size:12px;color:var(--text-sec)}
+.feedback-card .fb-auth label{display:flex;align-items:flex-start;gap:7px;cursor:pointer;line-height:1.5}
+.feedback-card .fb-auth input[type=radio]{margin-top:3px;accent-color:var(--gold)}
+.feedback-card .btn-fb{width:100%;padding:11px;background:linear-gradient(135deg,#1A7C3E,#25A352);color:#fff;border:none;border-radius:10px;font-size:13.5px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:7px}
+.feedback-card .btn-fb:hover{opacity:.9}
+.feedback-card .fb-success{text-align:center;padding:0.75rem;color:#085041;font-size:13px;font-weight:500}
+.btns-wrap{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--border)}
+.btns-divider{text-align:center;font-size:11px;color:var(--text-ter);margin:0.75rem 0;letter-spacing:0.05em;text-transform:uppercase}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media print{.header,.progress,.msg.user,.opts,.loading,.btns-wrap,.name-input{display:none!important}.msg.bot{display:none!important}.result{box-shadow:none;border:none;padding:0}.result h3,.result-ilustra,.conceito-box{-webkit-print-color-adjust:exact;print-color-adjust:exact}.result-ilustra{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">Dieta <span>Visual</span></div>
+    <div class="tagline">Protocolo personalizado · Método Cabelo Comando Visual</div>
+    <div class="progress" id="prog"></div>
+  </div>
+  <div class="chat" id="chat"></div>
+</div>
+<script>
+const A={};
+const TOTAL=13;
+
+function upd(n){const p=document.getElementById('prog');p.innerHTML='';for(let i=0;i<TOTAL;i++){const d=document.createElement('div');d.className='dot'+(i<n?' done':i===n?' active':'');p.appendChild(d);}}
+function ch(){return document.getElementById('chat')}
+function msg(t,tp,d){return new Promise(r=>setTimeout(()=>{const e=document.createElement('div');e.className='msg '+tp;e.innerHTML=t;ch().appendChild(e);ch().scrollTop=99999;r();},d||0));}
+function ld(id='ld'){const e=document.createElement('div');e.className='loading';e.id=id;e.innerHTML='<span></span><span></span><span></span>';ch().appendChild(e);ch().scrollTop=99999;}
+function ul(id='ld'){const e=document.getElementById(id);if(e)e.remove();}
+function opts(os,cb){const w=document.createElement('div');w.className='opts';os.forEach(o=>{const b=document.createElement('button');b.className='opt';b.innerHTML=o.svg?o.svg+`<div><div class="opt-label">${o.label}</div>${o.desc?`<div class="opt-desc">${o.desc}</div>`:''}</div>`:`<div><div class="opt-label">${o.label}</div>${o.desc?`<div class="opt-desc">${o.desc}</div>`:''}</div>`;b.onclick=()=>{w.remove();cb(o);};w.appendChild(b);});ch().appendChild(w);ch().scrollTop=99999;}
+function badge(cls,txt){const b=document.createElement('div');b.className='badge-wrap';b.innerHTML=`<span class="badge ${cls}">${txt}</span>`;ch().appendChild(b);}
+function nameInput(cb){
+  const w=document.createElement('div');w.className='name-input';
+  w.innerHTML=`<input type="text" id="nm" placeholder="Digite seu primeiro nome..." autocomplete="given-name"/><button id="nmbtn">Continuar</button>`;
+  ch().appendChild(w);ch().scrollTop=99999;
+  const inp=document.getElementById('nm'),btn=document.getElementById('nmbtn');
+  setTimeout(()=>inp.focus(),200);
+  const submit=()=>{const v=inp.value.trim();if(v.length<2)return;w.remove();cb(v);};
+  btn.onclick=submit;
+  inp.addEventListener('keypress',e=>{if(e.key==='Enter')submit();});
+}
+function wait(ms){return new Promise(r=>setTimeout(r,ms))}
+
+// ==================== SVG LIBRARY ====================
+
+function svgRostoAssimetria(lado){
+  const isEsq=lado==='esquerdo';
+  return `<svg viewBox="0 0 160 170" width="160" height="170" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="80" cy="82" rx="48" ry="57" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.5"/>
+  <path d="M45 58 Q58 52 70 56" stroke="#3A2E20" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M90 ${isEsq?'52':'56'} Q102 ${isEsq?'48':'52'} 115 ${isEsq?'52':'56'}" stroke="#3A2E20" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="60" cy="72" rx="10" ry="7" fill="none" stroke="#3A2E20" stroke-width="1.3"/>
+  <ellipse cx="100" cy="72" rx="10" ry="7" fill="none" stroke="#3A2E20" stroke-width="1.3"/>
+  <circle cx="60" cy="72" r="4" fill="#3A2E20"/><circle cx="100" cy="72" r="4" fill="#3A2E20"/>
+  <path d="M80 82 L76 96 Q80 100 84 96 L80 82" fill="none" stroke="#C4973A" stroke-width="1.5"/>
+  <path d="M66 110 Q80 118 94 110" fill="none" stroke="#3A2E20" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M32 38 Q24 22 42 12 Q58 4 80 8 Q104 4 120 18 Q134 34 128 54 Q122 40 110 28 Q88 16 70 18 Q52 20 40 34 Z" fill="#C4973A" opacity="0.85"/>
+  ${isEsq
+    ? `<path d="M32 38 Q34 52 36 66" stroke="#C4973A" stroke-width="4" fill="none" stroke-linecap="round"/>
+       <path d="M18 120 L42 100" stroke="#1D6B4F" stroke-width="2.5" stroke-dasharray="3,2" stroke-linecap="round"/>
+       <polygon points="42,100 33,101 36,110" fill="#1D6B4F"/>
+       <text x="14" y="138" font-size="10" fill="#1D6B4F" font-family="DM Sans" font-weight="500">jogue para</text>
+       <text x="14" y="150" font-size="10" fill="#1D6B4F" font-family="DM Sans" font-weight="500">este lado</text>`
+    : `<path d="M128 38 Q126 52 124 66" stroke="#C4973A" stroke-width="4" fill="none" stroke-linecap="round"/>
+       <path d="M142 120 L118 100" stroke="#1D6B4F" stroke-width="2.5" stroke-dasharray="3,2" stroke-linecap="round"/>
+       <polygon points="118,100 127,101 124,110" fill="#1D6B4F"/>
+       <text x="98" y="138" font-size="10" fill="#1D6B4F" font-family="DM Sans" font-weight="500">jogue para</text>
+       <text x="98" y="150" font-size="10" fill="#1D6B4F" font-family="DM Sans" font-weight="500">este lado</text>`
+  }
+  </svg>`;
+}
+
+function svgLinhasRosto(){
+  return `<div class="ilustra-grid">
+  <div class="ilustra-item">
+    <svg width="64" height="78" viewBox="0 0 64 78">
+    <rect x="10" y="8" width="44" height="54" rx="8" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/>
+    <line x1="10" y1="30" x2="54" y2="30" stroke="#7F77DD" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <line x1="10" y1="46" x2="54" y2="46" stroke="#7F77DD" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <line x1="32" y1="8" x2="32" y2="62" stroke="#7F77DD" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <text x="32" y="73" text-anchor="middle" font-size="9" fill="#3C3489" font-family="DM Sans" font-weight="600">Retas</text>
+    </svg>
+    <span class="ilustra-label">Estrutura<br>Autoridade</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="64" height="78" viewBox="0 0 64 78">
+    <ellipse cx="32" cy="35" rx="22" ry="27" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.5"/>
+    <ellipse cx="32" cy="35" rx="14" ry="18" fill="none" stroke="#D4537E" stroke-width="1" stroke-dasharray="2,2"/>
+    <text x="32" y="73" text-anchor="middle" font-size="9" fill="#8B2252" font-family="DM Sans" font-weight="600">Curvas</text>
+    </svg>
+    <span class="ilustra-label">Delicadeza<br>Envolvência</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="64" height="78" viewBox="0 0 64 78">
+    <polygon points="32,8 10,62 54,62" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/>
+    <line x1="14" y1="18" x2="50" y2="54" stroke="#BA7517" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <line x1="50" y1="18" x2="14" y2="54" stroke="#BA7517" stroke-width="1.2" stroke-dasharray="2,2"/>
+    <text x="32" y="73" text-anchor="middle" font-size="9" fill="#633806" font-family="DM Sans" font-weight="600">Diagonais</text>
+    </svg>
+    <span class="ilustra-label">Dinamismo<br>Energia</span>
+  </div>
+  </div>`;
+}
+
+function svgCabeloMeio(){
+  return `<div class="ilustra-grid">
+  <div class="ilustra-item">
+    <svg width="86" height="106" viewBox="0 0 86 106">
+    <ellipse cx="43" cy="48" rx="30" ry="38" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.3"/>
+    <line x1="43" y1="10" x2="43" y2="84" stroke="#D85A30" stroke-width="2" stroke-dasharray="3,2"/>
+    <path d="M43 52 L39 66 Q43 70 47 66 L43 52" fill="none" stroke="#C4973A" stroke-width="1.5"/>
+    <path d="M43 24 L30 10" stroke="#D85A30" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <path d="M43 24 L56 10" stroke="#D85A30" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <path d="M13 22 Q10 12 20 8 Q32 2 43 4 Q54 2 66 8 Q76 12 73 22 Q70 16 58 12 Q48 10 43 10 Q38 10 28 12 Q16 16 13 22 Z" fill="#C4973A" opacity="0.85"/>
+    <text x="43" y="99" text-anchor="middle" font-size="10" fill="#D85A30" font-family="DM Sans" font-weight="600">Ao meio</text>
+    </svg>
+    <span class="ilustra-label">Espelha a linha<br>do nariz</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="86" height="106" viewBox="0 0 86 106">
+    <ellipse cx="43" cy="48" rx="30" ry="38" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.3"/>
+    <path d="M43 52 L39 66 Q43 70 47 66 L43 52" fill="none" stroke="#C4973A" stroke-width="1.5"/>
+    <path d="M60 10 Q52 28 48 48" stroke="#1D6B4F" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M13 22 Q10 12 20 8 Q32 2 43 4 Q58 2 66 8 Q76 12 73 22 Q70 16 58 12 Q48 10 43 10 Q38 10 28 12 Q16 16 13 22 Z" fill="#C4973A" opacity="0.85"/>
+    <text x="43" y="99" text-anchor="middle" font-size="10" fill="#1D6B4F" font-family="DM Sans" font-weight="600">De lado</text>
+    </svg>
+    <span class="ilustra-label">Quebra o espelhamento</span>
+  </div>
+  </div>`;
+}
+
+function svgFranja(){
+  return `<div class="ilustra-grid">
+  <div class="ilustra-item">
+    <svg width="76" height="100" viewBox="0 0 76 100">
+    <ellipse cx="38" cy="48" rx="28" ry="34" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.3"/>
+    <path d="M10 30 Q38 22 66 30" fill="#C4973A" stroke="#8B6914" stroke-width="1"/>
+    <line x1="10" y1="38" x2="66" y2="38" stroke="#C4973A" stroke-width="3" stroke-linecap="round"/>
+    <text x="38" y="92" text-anchor="middle" font-size="10" fill="#1D6B4F" font-family="DM Sans" font-weight="600">Franja curta</text>
+    </svg>
+    <span class="ilustra-label">Acima dos olhos<br>rosto parece mais longo</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="76" height="100" viewBox="0 0 76 100">
+    <ellipse cx="38" cy="48" rx="28" ry="34" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.3"/>
+    <path d="M10 26 Q38 18 66 26" fill="#C4973A" stroke="#8B6914" stroke-width="1"/>
+    <line x1="10" y1="44" x2="66" y2="44" stroke="#C4973A" stroke-width="3" stroke-linecap="round"/>
+    <path d="M10 26 L10 44" stroke="#C4973A" stroke-width="1.5"/>
+    <path d="M66 26 L66 44" stroke="#C4973A" stroke-width="1.5"/>
+    <text x="38" y="92" text-anchor="middle" font-size="10" fill="#8B2252" font-family="DM Sans" font-weight="600">Franja longa</text>
+    </svg>
+    <span class="ilustra-label">Abaixo dos olhos<br>rosto parece mais curto</span>
+  </div>
+  </div>`;
+}
+
+function svgGola(){
+  return `<div class="ilustra-grid">
+  <div class="ilustra-item">
+    <svg width="70" height="80" viewBox="0 0 70 80">
+    <ellipse cx="35" cy="18" rx="14" ry="16" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.2"/>
+    <path d="M20 32 Q18 55 14 72 L56 72 Q52 55 50 32 Z" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.2"/>
+    <line x1="22" y1="34" x2="48" y2="34" stroke="#BA7517" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M35 34 L35 28" stroke="#D85A30" stroke-width="1.5"/>
+    <polygon points="35,28 32,33 38,33" fill="#D85A30"/>
+    <text x="35" y="78" text-anchor="middle" font-size="9" fill="#633806" font-family="DM Sans" font-weight="600">Próxima</text>
+    </svg>
+    <span class="ilustra-label">Encurta<br>o rosto</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="70" height="80" viewBox="0 0 70 80">
+    <ellipse cx="35" cy="18" rx="14" ry="16" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.2"/>
+    <path d="M20 32 Q18 55 14 72 L56 72 Q52 55 50 32 Z" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.2"/>
+    <path d="M22 34 L35 48 L48 34" fill="#FAF7F2" stroke="#1D9E75" stroke-width="2" stroke-linecap="round"/>
+    <path d="M35 34 L35 20" stroke="#1D9E75" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <polygon points="35,20 32,27 38,27" fill="#1D9E75"/>
+    <text x="35" y="78" text-anchor="middle" font-size="9" fill="#085041" font-family="DM Sans" font-weight="600">Média</text>
+    </svg>
+    <span class="ilustra-label">Alonga<br>o rosto</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="70" height="80" viewBox="0 0 70 80">
+    <ellipse cx="35" cy="18" rx="14" ry="16" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.2"/>
+    <path d="M20 32 Q18 55 14 72 L56 72 Q52 55 50 32 Z" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.2"/>
+    <path d="M16 34 L35 60 L54 34" fill="#FAF7F2" stroke="#7F77DD" stroke-width="2" stroke-linecap="round"/>
+    <path d="M35 34 L35 14" stroke="#7F77DD" stroke-width="1.5" stroke-dasharray="2,2"/>
+    <polygon points="35,14 32,21 38,21" fill="#7F77DD"/>
+    <text x="35" y="78" text-anchor="middle" font-size="9" fill="#3C3489" font-family="DM Sans" font-weight="600">Aberta</text>
+    </svg>
+    <span class="ilustra-label">Alonga<br>muito mais</span>
+  </div>
+  </div>`;
+}
+
+function svgPapada(){
+  return `<div class="ilustra-grid">
+  <div class="ilustra-item">
+    <svg width="76" height="92" viewBox="0 0 76 92">
+    <ellipse cx="38" cy="34" rx="26" ry="30" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.2"/>
+    <path d="M12 55 Q20 70 38 72 Q56 70 64 55" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.2"/>
+    <path d="M20 58 Q8 70 10 82" stroke="#D85A30" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M24 44 Q12 58 14 72" stroke="#D85A30" stroke-width="2" fill="none" stroke-dasharray="3,2" stroke-linecap="round"/>
+    <text x="38" y="88" text-anchor="middle" font-size="9" fill="#D85A30" font-family="DM Sans" font-weight="600">✗ linha igual</text>
+    </svg>
+    <span class="ilustra-label">Evitar linha<br>que espelhe</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="76" height="92" viewBox="0 0 76 92">
+    <ellipse cx="38" cy="34" rx="26" ry="30" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.2"/>
+    <path d="M12 55 Q20 70 38 72 Q56 70 64 55" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.2"/>
+    <line x1="14" y1="40" x2="14" y2="84" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="62" y1="40" x2="62" y2="84" stroke="#1D9E75" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="38" y="88" text-anchor="middle" font-size="9" fill="#1D6B4F" font-family="DM Sans" font-weight="600">✓ vertical</text>
+    </svg>
+    <span class="ilustra-label">Qualquer linha<br>diferente atenua</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="76" height="92" viewBox="0 0 76 92">
+    <ellipse cx="38" cy="34" rx="26" ry="30" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.2"/>
+    <path d="M12 55 Q20 70 38 72 Q56 70 64 55" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.2"/>
+    <path d="M54 22 L16 72" stroke="#7F77DD" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <text x="38" y="88" text-anchor="middle" font-size="9" fill="#4A3580" font-family="DM Sans" font-weight="600">✓ oposta</text>
+    </svg>
+    <span class="ilustra-label">Diagonal<br>para frente</span>
+  </div>
+  </div>`;
+}
+
+function svgCorpoCortes(){
+  return `<div class="ilustra-grid">
+  <div class="ilustra-item">
+    <svg width="72" height="96" viewBox="0 0 72 96">
+    <path d="M8 0 Q8 22 20 28 Q8 34 8 56 L64 56 Q64 34 52 28 Q64 22 64 0 Z" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.2"/>
+    <rect x="10" y="59" width="12" height="22" rx="3" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.2"/>
+    <rect x="50" y="59" width="12" height="22" rx="3" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.2"/>
+    <path d="M20 56 Q36 70 52 56" stroke="#1D6B4F" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <text x="36" y="92" text-anchor="middle" font-size="9" fill="#633806" font-family="DM Sans" font-weight="600">U ou V</text>
+    </svg>
+    <span class="ilustra-label">Retrai cintura<br>expande quadril</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="72" height="96" viewBox="0 0 72 96">
+    <path d="M20 0 L8 56 L64 56 L52 0 Z" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.2"/>
+    <rect x="10" y="59" width="12" height="22" rx="3" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.2"/>
+    <rect x="50" y="59" width="12" height="22" rx="3" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.2"/>
+    <line x1="14" y1="22" x2="58" y2="22" stroke="#1D9E75" stroke-width="3" stroke-linecap="round"/>
+    <text x="36" y="92" text-anchor="middle" font-size="9" fill="#085041" font-family="DM Sans" font-weight="600">Reta</text>
+    </svg>
+    <span class="ilustra-label">Expande onde<br>termina</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="72" height="96" viewBox="0 0 72 96">
+    <path d="M20 0 L8 56 L64 56 L52 0 Z" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.2"/>
+    <rect x="10" y="59" width="12" height="22" rx="3" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.2"/>
+    <rect x="50" y="59" width="12" height="22" rx="3" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.2"/>
+    <path d="M14 56 Q20 40 36 36 Q52 40 58 56" stroke="#7F77DD" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <text x="36" y="92" text-anchor="middle" font-size="9" fill="#3C3489" font-family="DM Sans" font-weight="600">Côncava</text>
+    </svg>
+    <span class="ilustra-label">Espelha diagonal<br>do quadril</span>
+  </div>
+  </div>`;
+}
+
+function svgBiotipo(biotipo){
+  const m={
+    'Retângulo':`<rect x="10" y="0" width="24" height="50" rx="4" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/><rect x="11" y="53" width="9" height="19" rx="3" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/><rect x="24" y="53" width="9" height="19" rx="3" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/>`,
+    'Triângulo / Pêra':`<path d="M18 0 L6 50 L38 50 L26 0 Z" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/><rect x="9" y="53" width="9" height="19" rx="3" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/><rect x="26" y="53" width="9" height="19" rx="3" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/>`,
+    'Triângulo invertido':`<path d="M6 0 L18 50 L26 50 L38 0 Z" fill="#FAECE7" stroke="#D85A30" stroke-width="1.5"/><rect x="12" y="53" width="9" height="19" rx="3" fill="#FAECE7" stroke="#D85A30" stroke-width="1.5"/><rect x="23" y="53" width="9" height="19" rx="3" fill="#FAECE7" stroke="#D85A30" stroke-width="1.5"/>`,
+    'Ampulheta':`<path d="M6 0 Q6 20 16 26 Q6 32 6 50 L38 50 Q38 32 28 26 Q38 20 38 0 Z" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/><rect x="11" y="53" width="9" height="19" rx="3" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/><rect x="24" y="53" width="9" height="19" rx="3" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/>`,
+    'Oval / Redondo':`<ellipse cx="22" cy="25" rx="16" ry="25" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.5"/><rect x="10" y="53" width="9" height="19" rx="3" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.5"/><rect x="23" y="53" width="9" height="19" rx="3" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.5"/>`
+  };
+  return `<svg viewBox="0 0 44 72" width="62" height="92">${m[biotipo]||m['Retângulo']}</svg>`;
+}
+
+function svgCorRoupas(){
+  return `<div class="ilustra-grid">
+  <div class="ilustra-item">
+    <svg width="60" height="90" viewBox="0 0 60 90">
+    <rect x="18" y="8" width="24" height="32" rx="3" fill="#FAF7F2" stroke="#3A2E20" stroke-width="1.2"/>
+    <rect x="16" y="40" width="28" height="40" rx="3" fill="#3A2E20"/>
+    <text x="30" y="88" text-anchor="middle" font-size="9" fill="#7A6A54" font-family="DM Sans" font-weight="600">Claro/Escuro</text>
+    </svg>
+    <span class="ilustra-label">Expande ombros<br>retrai quadril</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="60" height="90" viewBox="0 0 60 90">
+    <rect x="18" y="8" width="24" height="32" rx="3" fill="#3A2E20"/>
+    <rect x="16" y="40" width="28" height="40" rx="3" fill="#FAF7F2" stroke="#3A2E20" stroke-width="1.2"/>
+    <text x="30" y="88" text-anchor="middle" font-size="9" fill="#7A6A54" font-family="DM Sans" font-weight="600">Escuro/Claro</text>
+    </svg>
+    <span class="ilustra-label">Retrai ombros<br>expande quadril</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="60" height="90" viewBox="0 0 60 90">
+    <rect x="18" y="8" width="24" height="32" rx="3" fill="#BA7517"/>
+    <rect x="26" y="36" width="8" height="8" fill="#1C1410"/>
+    <rect x="16" y="40" width="28" height="40" rx="3" fill="#BA7517"/>
+    <text x="30" y="88" text-anchor="middle" font-size="9" fill="#7A6A54" font-family="DM Sans" font-weight="600">Cinto escuro</text>
+    </svg>
+    <span class="ilustra-label">Cria cintura<br>por contraste</span>
+  </div>
+  </div>`;
+}
+
+function svgEnergia(){
+  return `<div class="ilustra-grid">
+  <div class="ilustra-item">
+    <svg width="64" height="82" viewBox="0 0 64 82">
+    <ellipse cx="32" cy="20" rx="14" ry="16" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.2"/>
+    <path d="M18 14 L18 44" stroke="#3A2E20" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M46 14 L46 44" stroke="#3A2E20" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M18 14 Q32 8 46 14" stroke="#3A2E20" stroke-width="2.5" fill="none"/>
+    <line x1="18" y1="44" x2="46" y2="44" stroke="#3A2E20" stroke-width="2" stroke-linecap="round"/>
+    <rect x="22" y="46" width="20" height="24" rx="3" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.2"/>
+    <text x="32" y="78" text-anchor="middle" font-size="9" fill="#3C3489" font-family="DM Sans" font-weight="600">Liso/reto</text>
+    </svg>
+    <span class="ilustra-label">Estrutura<br>Autoridade</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="64" height="82" viewBox="0 0 64 82">
+    <ellipse cx="32" cy="20" rx="14" ry="16" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.2"/>
+    <path d="M18 14 Q15 22 18 29 Q15 36 18 44" stroke="#C4973A" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M46 14 Q49 22 46 29 Q49 36 46 44" stroke="#C4973A" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M18 14 Q32 8 46 14" stroke="#C4973A" stroke-width="2.5" fill="none"/>
+    <path d="M18 44 Q24 41 32 44 Q40 47 46 44" stroke="#C4973A" stroke-width="2" fill="none"/>
+    <path d="M22 46 Q22 62 14 74 L50 74 Q42 62 42 46 Z" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.2"/>
+    <text x="32" y="78" text-anchor="middle" font-size="9" fill="#8B2252" font-family="DM Sans" font-weight="600">Ondulado</text>
+    </svg>
+    <span class="ilustra-label">Envolvência<br>Sensualidade</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="64" height="82" viewBox="0 0 64 82">
+    <ellipse cx="32" cy="20" rx="14" ry="16" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.2"/>
+    <path d="M18 14 Q15 20 20 25 Q15 31 19 37 Q17 41 18 44" stroke="#1D6B4F" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M46 14 Q49 20 44 25 Q49 31 45 37 Q47 41 46 44" stroke="#1D6B4F" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M18 14 Q32 8 46 14" stroke="#1D6B4F" stroke-width="2.5" fill="none"/>
+    <path d="M18 44 L15 37 M22 44 L21 37 M42 44 L41 37 M46 44 L49 37" stroke="#1D6B4F" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M20 46 L8 74 L56 74 L44 46 Z" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.2"/>
+    <text x="32" y="78" text-anchor="middle" font-size="9" fill="#085041" font-family="DM Sans" font-weight="600">Repicado</text>
+    </svg>
+    <span class="ilustra-label">Dinamismo<br>Ousadia</span>
+  </div>
+  </div>`;
+}
+
+function svgSensualidadeNuca(){
+  return `<svg viewBox="0 0 280 380" width="100%" style="max-width:260px" xmlns="http://www.w3.org/2000/svg">
+  <!-- fundo marrom quente -->
+  <rect x="0" y="0" width="280" height="380" fill="#6B3820" rx="6"/>
+
+  <!-- coque no topo -->
+  <ellipse cx="118" cy="34" rx="22" ry="17" fill="#3A2818"/>
+  <ellipse cx="114" cy="30" rx="16" ry="12" fill="#4A3220"/>
+
+  <!-- rosto de perfil virado pra direita -->
+  <path d="M115 50
+    Q108 50 104 58
+    Q102 66 103 78
+    Q101 82 100 88
+    Q99 94 102 98
+    Q101 102 104 106
+    Q108 114 118 118
+    Q130 120 138 118
+    Q152 116 158 104
+    Q164 92 162 78
+    Q160 64 152 56
+    Q144 50 132 50 Z"
+    fill="#E8B896" stroke="#8B5A3C" stroke-width="1"/>
+
+  <!-- cabelo na parte de trás da cabeça -->
+  <path d="M100 72 Q96 60 102 50 Q110 42 120 42" fill="none" stroke="#3A2818" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- olho fechado (linha) -->
+  <path d="M138 82 Q143 84 148 82" stroke="#3A2818" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+  <!-- nariz pequeno -->
+  <path d="M158 88 L162 96 Q160 100 156 98" fill="none" stroke="#8B5A3C" stroke-width="1.2"/>
+  <!-- boca -->
+  <path d="M148 106 Q153 108 156 106" stroke="#8B5A3C" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+
+  <!-- pescoço -->
+  <path d="M112 118 Q110 128 108 138 L138 138 Q138 128 136 118" fill="#E8B896" stroke="#8B5A3C" stroke-width="1"/>
+
+  <!-- corpo de perfil - tronco superior (ombro, costas, peito) -->
+  <path d="M108 138
+    Q95 145 92 165
+    Q94 185 100 210
+    Q103 230 100 250
+    Q95 268 105 280
+    Q118 278 128 268
+    Q140 260 148 245
+    Q154 225 152 200
+    Q150 180 148 160
+    Q148 148 140 140
+    Z"
+    fill="#E8B896" stroke="#8B5A3C" stroke-width="1"/>
+
+  <!-- sutiã / top branco -->
+  <path d="M112 162 Q106 168 108 180 Q120 186 135 185 Q148 184 150 172 Q148 162 142 158 Z" fill="#FAF7F2" stroke="#C4A98A" stroke-width="0.8"/>
+
+  <!-- calcinha branca -->
+  <path d="M100 255 Q100 265 105 278 Q118 278 130 270 Q148 258 150 248 Q148 244 144 244 L108 244 Q102 248 100 255 Z" fill="#FAF7F2" stroke="#C4A98A" stroke-width="0.8"/>
+
+  <!-- pernas -->
+  <path d="M108 280 Q108 310 110 340 Q112 360 118 370" fill="none" stroke="#E8B896" stroke-width="22" stroke-linecap="round"/>
+  <path d="M108 280 Q108 310 110 340 Q112 360 118 370" fill="none" stroke="#8B5A3C" stroke-width="1" stroke-linecap="round" fill-opacity="0"/>
+
+  <!-- braço do lado de cá -->
+  <path d="M145 145 Q152 175 155 210 Q156 240 155 260" fill="none" stroke="#E8B896" stroke-width="16" stroke-linecap="round"/>
+
+  <!-- ========== AS CURVAS VERMELHAS ========== -->
+
+  <!-- CURVA 1: da nuca / pescoço -->
+  <path d="M96 140 Q92 152 94 168" stroke="#E53935" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- CURVA 2: logo acima do bumbum / lombar -->
+  <path d="M90 218 Q84 240 90 260" stroke="#E53935" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+
+  <!-- CURVA 3: bumbum -->
+  <path d="M94 262 Q98 272 102 280" stroke="#E53935" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- CURVA 4: panturrilha -->
+  <path d="M100 300 Q96 320 100 338" stroke="#E53935" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+  <!-- LABELS -->
+  <line x1="80" y1="154" x2="50" y2="154" stroke="#FAF7F2" stroke-width="1" opacity="0.7"/>
+  <text x="46" y="152" text-anchor="end" font-size="11" fill="#FAF7F2" font-family="DM Sans" font-weight="500">nuca</text>
+
+  <line x1="78" y1="238" x2="50" y2="238" stroke="#FAF7F2" stroke-width="1" opacity="0.7"/>
+  <text x="46" y="236" text-anchor="end" font-size="11" fill="#FAF7F2" font-family="DM Sans" font-weight="500">lombar</text>
+
+  <!-- seta de espelhamento -->
+  <path d="M45 165 Q30 200 45 230" stroke="#F0D080" stroke-width="1.3" stroke-dasharray="3,2" fill="none" stroke-linecap="round"/>
+  <polygon points="45,230 40,222 50,222" fill="#F0D080"/>
+  <text x="14" y="200" font-size="10" fill="#F0D080" font-family="DM Sans" font-style="italic">espelha</text>
+
+  </svg>`;
+}
+
+function svgVolumeProporção(){
+  return `<div class="ilustra-grid">
+  <div class="ilustra-item">
+    <svg width="70" height="110" viewBox="0 0 70 110">
+    <ellipse cx="35" cy="20" rx="14" ry="15" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.2"/>
+    <path d="M20 14 Q12 22 12 38 Q20 35 22 34" stroke="#C4973A" stroke-width="2.5" fill="none"/>
+    <path d="M50 14 Q58 22 58 38 Q50 35 48 34" stroke="#C4973A" stroke-width="2.5" fill="none"/>
+    <path d="M12 38 Q20 50 22 34 Z" fill="#C4973A" opacity="0.6"/>
+    <path d="M58 38 Q50 50 48 34 Z" fill="#C4973A" opacity="0.6"/>
+    <rect x="22" y="36" width="26" height="42" rx="4" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.3"/>
+    <rect x="24" y="80" width="10" height="22" rx="2" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.3"/>
+    <rect x="36" y="80" width="10" height="22" rx="2" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.3"/>
+    <text x="35" y="108" text-anchor="middle" font-size="9" fill="#633806" font-family="DM Sans" font-weight="600">Cabelo volumoso</text>
+    </svg>
+    <span class="ilustra-label">Cabelo em evidência<br>corpo retraído</span>
+  </div>
+  <div class="ilustra-item">
+    <svg width="70" height="110" viewBox="0 0 70 110">
+    <ellipse cx="35" cy="20" rx="14" ry="15" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.2"/>
+    <path d="M24 14 L24 30" stroke="#C4973A" stroke-width="2.5" fill="none"/>
+    <path d="M46 14 L46 30" stroke="#C4973A" stroke-width="2.5" fill="none"/>
+    <rect x="18" y="32" width="34" height="46" rx="4" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.3"/>
+    <rect x="22" y="80" width="10" height="22" rx="2" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.3"/>
+    <rect x="38" y="80" width="10" height="22" rx="2" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.3"/>
+    <text x="35" y="108" text-anchor="middle" font-size="9" fill="#085041" font-family="DM Sans" font-weight="600">Cabelo discreto</text>
+    </svg>
+    <span class="ilustra-label">Corpo em evidência<br>cabelo não compete</span>
+  </div>
+  </div>`;
+}
+
+function svg5cm(){
+  return `<svg viewBox="0 0 200 140" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="100" cy="60" rx="40" ry="52" fill="#FAF7F2" stroke="#E8DDD0" stroke-width="1.5"/>
+  <ellipse cx="80" cy="76" rx="3" ry="5" fill="#3A2E20"/>
+  <ellipse cx="120" cy="76" rx="3" ry="5" fill="#3A2E20"/>
+  <path d="M100 88 L97 100 Q100 104 103 100 L100 88" fill="none" stroke="#C4973A" stroke-width="1.3"/>
+  <path d="M92 114 Q100 118 108 114" fill="none" stroke="#3A2E20" stroke-width="1.5"/>
+  <line x1="138" y1="78" x2="138" y2="112" stroke="#1D6B4F" stroke-width="2"/>
+  <line x1="134" y1="78" x2="142" y2="78" stroke="#1D6B4F" stroke-width="2"/>
+  <line x1="134" y1="112" x2="142" y2="112" stroke="#1D6B4F" stroke-width="2"/>
+  <text x="146" y="98" font-size="10" fill="#1D6B4F" font-family="DM Sans" font-weight="600">medida</text>
+  <circle cx="138" cy="78" r="3" fill="#D4537E"/>
+  <text x="148" y="80" font-size="9" fill="#8B2252" font-family="DM Sans">lóbulo</text>
+  <circle cx="138" cy="112" r="3" fill="#D4537E"/>
+  <text x="148" y="115" font-size="9" fill="#8B2252" font-family="DM Sans">queixo</text>
+  <text x="100" y="134" text-anchor="middle" font-size="10" fill="#7A6A54" font-family="DM Sans" font-style="italic">Menor que 5,7cm: cabelo curto favorece</text>
+  </svg>`;
+}
+
+// ==================== STEPS ====================
+
+async function step(s){
+  ld();await wait(700);ul();
+
+  if(s==='welcome'){
+    upd(0);
+    await msg('Bem-vinda ao seu <strong>Protocolo Dieta Visual</strong> ✦','bot');
+    await wait(400);
+    await msg('Em menos de 5 minutos, você vai ter em mãos um plano visual personalizado — baseado no seu rosto, no seu corpo e na forma como você quer ser vista.','bot',300);
+    await wait(500);
+    await msg('Antes de começar, como posso te chamar?','bot',300);
+    nameInput(async name=>{
+      A.nome=name.split(' ')[0];
+      await msg(A.nome,'user');
+      step('q1');
+    });
+
+  } else if(s==='q1'){
+    upd(1);
+    await msg(`Prazer, ${A.nome}! 🌸`,'bot');
+    await wait(300);
+    await msg('Olhe no espelho e observe suas sobrancelhas. Qual está <strong>mais alta</strong>?','bot',300);
+    opts([
+      {label:'A sobrancelha esquerda é mais alta'},
+      {label:'A sobrancelha direita é mais alta'},
+      {label:'Parecem iguais — não consigo ver diferença'},
+    ],async o=>{
+      A.sobrancelha=o.label;
+      A.lado_alto=o.label.includes('esquerda')?'esquerdo':o.label.includes('direita')?'direito':'indefinido';
+      A.lado_baixo=A.lado_alto==='esquerdo'?'direito':A.lado_alto==='direito'?'esquerdo':'indefinido';
+      await msg(o.label,'user');step('q2');
+    });
+
+  } else if(s==='q2'){
+    upd(2);
+    await msg('Como você percebe seu rosto no espelho?','bot');
+    opts([
+      {label:'Parece longo — quero mais equilíbrio'},
+      {label:'Parece largo ou redondo — quero verticalidade'},
+      {label:'Parece equilibrado — quero potencializar'},
+    ],async o=>{A.percepcao_rosto=o.label;await msg(o.label,'user');step('q3');});
+
+  } else if(s==='q3'){
+    upd(3);
+    await msg('Que tipo de linhas predominam no seu rosto?','bot');
+    opts([
+      {label:'Retas e angulosas',desc:'Maxilar definido, traços marcados'},
+      {label:'Curvas e arredondadas',desc:'Bochechas cheias, traços delicados'},
+      {label:'Mistura de retas e curvas'},
+    ],async o=>{A.linhas_rosto=o.label;await msg(o.label,'user');step('q4');});
+
+  } else if(s==='q4'){
+    upd(4);
+    await msg('Você costuma dividir o cabelo <strong>ao meio</strong>?','bot');
+    opts([
+      {label:'Sim, uso muito ao meio'},
+      {label:'Às vezes — depende do dia'},
+      {label:'Não, sempre divido de lado'},
+    ],async o=>{A.cabelo_meio=o.label;await msg(o.label,'user');step('q5');});
+
+  } else if(s==='q5'){
+    upd(5);
+    await msg('Você usa <strong>franja</strong>?','bot');
+    opts([
+      {label:'Sim, uso franja'},
+      {label:'Às vezes'},
+      {label:'Não uso'},
+    ],async o=>{A.franja=o.label;await msg(o.label,'user');step('q6');});
+
+  } else if(s==='q6'){
+    upd(6);
+    await msg('Sobre a região do queixo — você tem papada ou gostaria de definir melhor essa região?','bot');
+    opts([
+      {label:'Sim, gostaria de amenizar'},
+      {label:'Um pouco'},
+      {label:'Não, está bem'},
+    ],async o=>{A.papada=o.label;await msg(o.label,'user');step('q7');});
+
+  } else if(s==='q7'){
+    upd(7);
+    await msg(`Agora o corpo, ${A.nome}. Qual silhueta mais parece com a sua?`,'bot');
+    opts([
+      {label:'Retângulo',desc:'Ombros, cintura e quadril na mesma proporção',svg:`<svg width="32" height="52" viewBox="0 0 44 72" style="flex-shrink:0;margin-top:2px"><rect x="10" y="0" width="24" height="50" rx="4" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/><rect x="11" y="53" width="9" height="19" rx="3" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/><rect x="24" y="53" width="9" height="19" rx="3" fill="#EEEDFE" stroke="#7F77DD" stroke-width="1.5"/></svg>`},
+      {label:'Triângulo / Pêra',desc:'Quadril mais largo que os ombros',svg:`<svg width="32" height="52" viewBox="0 0 44 72" style="flex-shrink:0;margin-top:2px"><path d="M18 0 L6 50 L38 50 L26 0 Z" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/><rect x="9" y="53" width="9" height="19" rx="3" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/><rect x="26" y="53" width="9" height="19" rx="3" fill="#E1F5EE" stroke="#1D9E75" stroke-width="1.5"/></svg>`},
+      {label:'Triângulo invertido',desc:'Ombros mais largos que o quadril',svg:`<svg width="32" height="52" viewBox="0 0 44 72" style="flex-shrink:0;margin-top:2px"><path d="M6 0 L18 50 L26 50 L38 0 Z" fill="#FAECE7" stroke="#D85A30" stroke-width="1.5"/><rect x="12" y="53" width="9" height="19" rx="3" fill="#FAECE7" stroke="#D85A30" stroke-width="1.5"/><rect x="23" y="53" width="9" height="19" rx="3" fill="#FAECE7" stroke="#D85A30" stroke-width="1.5"/></svg>`},
+      {label:'Ampulheta',desc:'Ombros e quadril equilibrados, cintura definida',svg:`<svg width="32" height="52" viewBox="0 0 44 72" style="flex-shrink:0;margin-top:2px"><path d="M6 0 Q6 20 16 26 Q6 32 6 50 L38 50 Q38 32 28 26 Q38 20 38 0 Z" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/><rect x="11" y="53" width="9" height="19" rx="3" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/><rect x="24" y="53" width="9" height="19" rx="3" fill="#FAEEDA" stroke="#BA7517" stroke-width="1.5"/></svg>`},
+      {label:'Oval / Redondo',desc:'Volume concentrado no centro',svg:`<svg width="32" height="52" viewBox="0 0 44 72" style="flex-shrink:0;margin-top:2px"><ellipse cx="22" cy="25" rx="16" ry="25" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.5"/><rect x="10" y="53" width="9" height="19" rx="3" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.5"/><rect x="23" y="53" width="9" height="19" rx="3" fill="#FBEAF0" stroke="#D4537E" stroke-width="1.5"/></svg>`},
+    ],async o=>{A.biotipo=o.label;await msg(o.label,'user');step('q8');});
+
+  } else if(s==='q8'){
+    upd(8);
+    await msg('Qual o comprimento atual do seu cabelo?','bot');
+    opts([
+      {label:'Curto — acima dos ombros'},
+      {label:'Médio — na altura dos ombros ou clavícula'},
+      {label:'Longo — próximo da cintura ou abaixo'},
+    ],async o=>{A.comprimento=o.label;await msg(o.label,'user');step('q9');});
+
+  } else if(s==='q9'){
+    upd(9);
+    await msg('Como você costuma combinar as cores das suas roupas?','bot');
+    opts([
+      {label:'Uso muito preto — cima e baixo'},
+      {label:'Claro em cima, escuro em baixo'},
+      {label:'Escuro em cima, claro em baixo'},
+      {label:'Tons parecidos no corpo inteiro'},
+      {label:'Misturo sem regra'},
+    ],async o=>{A.cor_roupa=o.label;await msg(o.label,'user');step('q10');});
+
+  } else if(s==='q10'){
+    upd(10);
+    await msg('Você costuma marcar a cintura com cinto ou detalhe?','bot');
+    opts([
+      {label:'Sim'},
+      {label:'Raramente'},
+      {label:'Nunca'},
+    ],async o=>{A.cinto=o.label;await msg(o.label,'user');step('q11');});
+
+  } else if(s==='q11'){
+    upd(11);
+    await msg('Sua pele bronzeia com facilidade ao sol?','bot');
+    opts([
+      {label:'Sim, fico dourada ou morena',desc:'Pele de subtom quente'},
+      {label:'Não — fico avermelhada',desc:'Pele de subtom frio'},
+      {label:'Tenho pele negra ou muito escura'},
+    ],async o=>{A.tom_pele=o.label;await msg(o.label,'user');step('q12');});
+
+  } else if(s==='q12'){
+    upd(12);
+    await msg('Que imagem você quer transmitir no dia a dia?','bot');
+    opts([
+      {label:'Autoridade e presença',desc:'Estrutura, poder, seriedade'},
+      {label:'Afeto e delicadeza',desc:'Acolhimento, suavidade'},
+      {label:'Dinamismo e modernidade',desc:'Energia, ousadia, movimento'},
+      {label:'Sensualidade elegante',desc:'Presença feminina forte'},
+    ],async o=>{A.energia=o.label;await msg(o.label,'user');step('generating');});
+
+  } else if(s==='generating'){
+    upd(13);
+    await msg(`Construindo seu protocolo, ${A.nome}... ✨`,'bot');
+    ld('ld2');
+    await gerarPlano();
+    ul('ld2');
+    await entregar();
+  }
+}
+
+// ==================== IA ====================
+
+async function gerarPlano(){
+  const rostoLongo=A.percepcao_rosto&&A.percepcao_rosto.includes('longo');
+  const ladoCorreto=rostoLongo?A.lado_alto:A.lado_baixo;
+
+  const prompt=`Você é o especialista do Protocolo Dieta Visual — método criado com base em mais de 20 anos de estudo em visagismo e MBA em análise de imagem. Você NÃO menciona nomes próprios em nenhum momento. Você é a voz técnica e acolhedora do método Cabelo Comando Visual.
+
+Você está escrevendo DIRETAMENTE para ${A.nome}. Use o nome dela naturalmente 2-3 vezes ao longo do texto, em momentos de conexão emocional — não em todo parágrafo.
+
+DADOS DE ${A.nome.toUpperCase()}:
+- Sobrancelha mais alta: ${A.sobrancelha} (lado alto: ${A.lado_alto} / lado baixo: ${A.lado_baixo})
+- Percepção do rosto: ${A.percepcao_rosto}
+- Linhas do rosto: ${A.linhas_rosto}
+- Usa cabelo ao meio: ${A.cabelo_meio}
+- Usa franja: ${A.franja}
+- Papada: ${A.papada}
+- Biotipo: ${A.biotipo}
+- Comprimento: ${A.comprimento}
+- Cores das roupas: ${A.cor_roupa}
+- Usa cinto: ${A.cinto}
+- Tom de pele: ${A.tom_pele}
+- Energia desejada: ${A.energia}
+
+CONCEITO CENTRAL QUE DEVE SER FIXADO:
+"Tudo são linhas. E toda linha ou é potencializada por linhas iguais/semelhantes, ou é atenuada por linhas opostas/diferentes. Isso vale para o rosto, para o corpo, para a roupa. A verdadeira liberdade de escolha está em ter consciência do que você está escolhendo — reforçar o que você valoriza em si, atenuar o que não está legal segundo a sua ótica."
+
+LEIS A APLICAR:
+
+1. ASSIMETRIA: ${A.lado_alto==='indefinido'?`${A.nome} marcou que NÃO consegue identificar qual sobrancelha é mais alta. Na tela, logo acima do seu texto, já aparece um card visual com o passo a passo do teste da régua para ela descobrir. NÃO REPITA esse passo a passo no texto. Apenas mencione que ela tem a instrução logo acima e siga explicando: se o rosto dela é ${A.percepcao_rosto.toLowerCase()}, ela deve jogar o cabelo para o lado ${rostoLongo?'ALTO (o que tocar a régua primeiro)':'BAIXO (o outro lado, logo abaixo)'} — ${rostoLongo?'equilibra proporções alongadas':'cria linha ascendente que alonga'}.`:`Para ${A.nome}, com rosto ${A.percepcao_rosto.toLowerCase()}, o lado CORRETO para jogar o cabelo é o lado ${ladoCorreto}. ${rostoLongo?'Rosto longo → lado alto → cria efeito de alargamento discreto e equilíbrio':'Rosto largo/redondo → lado baixo → cria linha ascendente que alonga'}. Rosto equilibrado → qualquer lado, explicar ambos os efeitos.`}
+
+2. COMPOSIÇÃO DE LINHAS: O rosto é um conjunto de linhas (maxilar, olhos, sobrancelhas, contorno). Quando você adiciona uma gola, brinco ou posiciona o cabelo, soma mais linhas à composição. Linha IGUAL potencializa. Linha OPOSTA atenua.
+- Rosto com linhas RETAS: gola reta potencializa autoridade; gola em V suaviza sem perder força; evitar gola muito arredondada (mulheres com traços marcados rejeitam por empatia visual).
+- Rosto com linhas CURVAS: cuidado com excesso de curvas ao redor (golas arredondadas, brincos redondos) pois intensifica percepção de arredondamento. Gola reta ou V equilibra.
+- Mistura: flexibilidade para escolher.
+
+3. CABELO AO MEIO: cria linha vertical que espelha o nariz. Se ela usa e o nariz incomoda, dividir de lado atenua. Se nariz arredondado, evitar linhas curvas próximas a ele.
+
+4. FRANJA, GOLA E O ROSTO COMO UNIDADE:
+A franja realmente LIMITA — quando a mulher usa franja, ela perde a possibilidade de jogar o cabelo pro lado para alongar OU expandir o rosto lateralmente. Isso é real, mas não é problema: a COMPENSAÇÃO vem pela gola.
+
+Mas a gola não é uma escolha mecânica (V alonga, redonda encurta). A gola trabalha junto com:
+- As LINHAS do rosto dela (retas, curvas, diagonais)
+- A ENERGIA que ela quer comunicar (autoridade, afeto, dinamismo, sensualidade)
+
+A mulher precisa entender que o ROSTO não termina no queixo. O rosto, visualmente, vai do início da testa (ou da franja, se houver) até onde a gola determina o limite inferior. A gola é a extensão vertical do rosto. Ela redefine as proporções.
+
+Tipos de gola e o que cada uma adiciona:
+- Gola em U (curva): adiciona linha curva ao rosto — potencializa delicadeza/envolvência quando rosto tem linhas curvas, atenua rigidez quando rosto tem linhas retas
+- Gola em V (diagonal): adiciona diagonal ao rosto — comunica dinamismo, alonga, funciona pra quase todos os rostos
+- Gola quadrada/reta (linha horizontal): adiciona estrutura — potencializa autoridade em rostos de linhas retas, atenua suavidade em rostos de linhas curvas
+
+Então a escolha da gola não é sobre "alongar ou encurtar" apenas — é sobre QUE LINHA você adiciona à composição do rosto, e COMO ela dialoga com as linhas que já existem lá e com a energia que a mulher escolheu comunicar.
+
+Para ${A.nome}, que tem rosto com ${A.linhas_rosto} e quer comunicar ${A.energia}: oriente a escolha de gola considerando esses dois fatores, não só o efeito de alongar/encurtar.
+
+5. PAPADA: linha diagonal para trás. QUALQUER linha passando pela região que seja DIFERENTE dessa diagonal atenua (vertical, diagonal oposta, etc). Não limitar a um corte específico.
+
+6. CORPO — OBJETIVO AMPULHETA:
+- Linha CÔNCAVA (U/V no corte): retrai cintura, expande quadril → aproxima de ampulheta
+- Linha RETA (corte reto horizontal): expande a região onde termina
+- Linha CONVEXA (bico, côncavo): espelha diagonal do quadril, expande o quadril
+Por biotipo:
+- RETÂNGULO: objetivo é criar visualmente a cintura que não existe. O CINTO (ou detalhe escuro marcando a cintura) é ESSENCIAL nesse biotipo — sem ele, não há ampulheta. Quando a mulher usa roupas de baixo contraste (tons parecidos no corpo inteiro), o cinto escuro na cintura é OBRIGATÓRIO para criar o afunilamento por contraste. Sem cinto + roupas de baixo contraste = silhueta fica reta. Complementa com U/V no corte terminando na cintura (converge e cria percepção de cintura). Roupas mais justas revelam o que existe. Deixa claro: para esse biotipo, o cinto não é acessório — é ferramenta estrutural.
+- TRIÂNGULO/PÊRA: curto/médio → reto no ombro expande ombros. Longo → U/V afina + cores claras nos ombros
+- TRIÂNGULO INVERTIDO: reto no quadril expande parte inferior. Escuro cima, claro baixo
+- AMPULHETA: PRESERVAR. U/V reforça. Evitar reta no centro
+- OVAL: U/V afina + escuro central + claro lateral + listras verticais
+
+7. COR — LUZ E SOMBRA: onde há LUZ (cor clara), há EXPANSÃO. Onde há SOMBRA (cor escura), há RETRAÇÃO. Aplicar no corpo e no cabelo. Mechas claras próximas à pele AMPLIAM a região (cuidado ombros no triângulo invertido).
+
+8. TOM DE PELE — OBRIGATÓRIO COMENTAR NA ETAPA 3 (Dieta do armário):
+O tom de pele é fundamental porque governa TUDO que entra em contato visual direto com o rosto: cor do cabelo, mechas, maquiagem, cor da gola/decote, acessórios (brincos, colares). Você DEVE dedicar pelo menos 2-3 frases dentro da Etapa 3 dando orientação específica sobre o tom de pele dela.
+
+Regras:
+- Pele QUENTE (bronzeia, fica dourada/morena): subtom amarelado/oliva/dourado.
+  → Harmonia (equilibrar): tons FRIOS com contraste baixo no cabelo (castanho acinzentado, loiro perolado, chocolate frio) + nas roupas próximas ao rosto (lavanda, azul petróleo, rosa antigo) = imagem serena, sofisticada, fluida.
+  → Caráter (intensificar): tons QUENTES no cabelo (dourado, cobre, mel, castanho acobreado) + roupas quentes (terracota, mostarda, verde-oliva) = presença afirmativa, calor visual.
+
+- Pele FRIA (fica avermelhada/rosada no sol): subtom rosado/azulado.
+  → Harmonia: tons QUENTES suaves (mel quente, cobre claro, castanho quente) + roupas em tons terrosos claros (areia, pêssego, coral suave) = equilíbrio do frio natural da pele.
+  → Caráter: tons FRIOS intensos (preto azulado, loiro perolado, castanho cinza) + roupas frias vibrantes (vinho, azul marinho, esmeralda) = presença intensa e elegante.
+
+- Pele NEGRA/MUITO ESCURA: altíssimo contraste funciona muito bem. Cores vibrantes (vermelho, amarelo queimado, esmeralda, azul royal) potencializam. Tons metálicos (dourado, bronze) criam luxo. Evitar tons muito apagados próximo ao rosto — retraem a presença visual.
+
+IMPORTANTE: Comente o tom de pele dela (${A.tom_pele}) dentro da Etapa 3 com orientação ESPECÍFICA — que tons de cabelo e que tons de roupa perto do rosto favorecem ela, E por quê. Não apenas jogue informação, explique o efeito visual que cada escolha causa.
+
+9. ENERGIA DAS FORMAS NO FIO:
+- Liso/reto: estrutura, força, estabilidade, autoridade
+- Ondulado/curvas: envolvência, afetividade, sensualidade. Contexto da roupa muda a conotação.
+- Repicado com movimento: dinamismo, ousadia, energia
+
+10. CABELO CURTO/PRESO E A DESCONSTRUÇÃO DO PRECONCEITO (aplicar se energia = sensualidade OU se comprimento atual é curto OU se ela pensou em cortar curto):
+Existe um conceito que precisa ser dito sem rodeios: diferente do que foi enraizado no inconsciente coletivo, cabelo curto ou preso NÃO é masculino — pelo contrário, revela as curvas do corpo. Quando o cabelo está preso ou curto, a NUCA fica exposta e a curva da nuca espelha a curva da LOMBAR (logo acima do bumbum), criando a sensação de bumbum mais projetado pra quem observa de perfil. A crença de que "homem não gosta de mulher de cabelo curto ou preso" vem de ego masculino disfarçado de preferência — originária do inconsciente coletivo que cresceu vendo desenhos do homem das cavernas arrastando a mulher pelos cabelos, totalmente submissa. Quando um homem vê cabelo curto ou preso, o inconsciente dele sente perda de dominância. Mas quando ele tira esse véu e para de ouvir o ego, finalmente percebe a real sensualidade da mulher — revelada pelas curvas que o cabelo longo cobria. Explique isso com tom revelador e libertador, não combativo. A escolha de cobrir ou revelar é dela.
+
+FORMATO — 4 seções com títulos entre **, usando exatamente estes títulos:
+**Etapa 1 — Seu rosto**
+**Etapa 2 — Seu corpo**
+**Etapa 3 — Dieta do armário**
+**A energia da sua imagem**
+
+REGRAS:
+- Parágrafos fluidos, ZERO bullets, ZERO listas
+- Tom de mentor técnico e acolhedor
+- PROFUNDO e ESPECÍFICO para os dados de ${A.nome}
+- Cada orientação com o PORQUÊ visual explicado
+- Usar o nome ${A.nome} 2-3 vezes em momentos naturais
+- NÃO repetir o conceito "linha igual potencializa/oposta atenua" em cada parágrafo — fixar UMA vez e aplicar
+- REFORÇAR a liberdade de escolha consciente no fechamento
+- 1200 a 1500 palavras TOTAL
+- Em cada seção, começar direto no conteúdo, sem repetir o título`;
+
+  try{
+    const r=await fetch('/api/proxy',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:[{role:'user',content:prompt}]})
+    });
+    const d=await r.json();
+    A.plano=d.content?.[0]?.text||fallback();
+  }catch(e){A.plano=fallback();}
+}
+
+function fallback(){
+  const b=A.biotipo||'';
+  const rostoLongo=A.percepcao_rosto&&A.percepcao_rosto.includes('longo');
+  const ladoIndicado=rostoLongo?A.lado_alto:A.lado_baixo;
+  const linhas=A.linhas_rosto||'';
+  const papada=A.papada||'';
+  const comp=A.comprimento||'';
+  const franja=A.franja||'';
+  const energia=A.energia||'';
+  const n=A.nome||'você';
+
+  let e1;
+  if(A.lado_alto==='indefinido'){
+    e1=`${n}, logo acima você tem o passo a passo do teste da régua para identificar a sua assimetria natural — faça o teste, porque toda mulher tem essa assimetria, é só questão de descobrir qual lado é qual. Depois que você identificar, aplique esta lógica: como seu rosto é ${A.percepcao_rosto.toLowerCase()}, jogue o cabelo para o lado ${rostoLongo?'ALTO (o que tocar a régua primeiro)':'BAIXO (o outro, que fica um pouco abaixo)'}. ${rostoLongo?'Isso cria um alargamento discreto que equilibra proporções alongadas.':'Isso cria uma linha diagonal ascendente que alonga e traz verticalidade ao rosto.'} É um gesto diário, funciona com qualquer corte, qualquer comprimento. Um gesto simples, mas de pura intenção visual.`;
+  } else {
+    e1=`${n}, o que você observou nas suas sobrancelhas é onde tudo começa. O lado onde a sobrancelha é mais alta é o lado mais alto do seu rosto — uma assimetria natural que, quando compreendida, vira uma ferramenta poderosa. Para o seu rosto ${A.percepcao_rosto.toLowerCase()}, jogue o cabelo para o lado ${ladoIndicado}. ${rostoLongo?'Como seu rosto parece longo, o cabelo para o lado alto cria uma sensação de alargamento discreto e equilíbrio — trazendo harmonia às proporções.':'Como seu rosto parece ter uma percepção mais larga, o cabelo para o lado baixo cria uma linha diagonal ascendente que alonga e traz verticalidade.'} É um gesto diário, funciona com qualquer comprimento, qualquer corte. Um gesto de intenção visual.`;
+  }
+  e1=`${e1}`;
+
+  e1+=` Seu rosto é uma composição de linhas — olhos, sobrancelhas, maxilar, contorno — e cada vez que você adiciona uma gola, um brinco, posiciona o cabelo, está adicionando mais linhas a essa composição. O princípio que governa tudo: linha igual potencializa, linha oposta atenua. Essa é a única regra que você precisa guardar para a vida toda.`;
+
+  if(A.cabelo_meio&&A.cabelo_meio.includes('Sim')){
+    e1+=` Uma observação importante: dividir o cabelo ao meio cria uma linha vertical que espelha a linha do nariz — colocando-o em evidência por volume de informação. Se o seu nariz incomoda, dividir de lado quebra esse espelhamento e atenua naturalmente.`;
+  }
+
+  if(franja.includes('Sim')||franja.includes('Às vezes')){
+    e1+=` Sobre a franja, ${n}: a franja realmente limita você — perde a possibilidade de jogar o cabelo pro lado, seja pra alongar ou pra expandir o rosto lateralmente. Isso é real. Mas a compensação vem pela gola — e aqui está o ponto que ninguém te contou: a gola não é uma escolha mecânica (V alonga, redonda encurta). A gola trabalha junto com as linhas do seu rosto e com a energia que você quer transmitir. Entenda: o rosto, visualmente, não termina no queixo. O rosto vai do início da testa (ou da franja, se você tem) até onde a gola determina o limite inferior. A gola é a extensão do seu rosto. Ela redefine suas proporções faciais. Uma gola em U adiciona curva à composição, uma gola em V adiciona diagonal, uma gola reta adiciona estrutura. A escolha certa pra você depende das linhas que seu rosto já tem — seus traços ${linhas.includes('retas')?'marcados':linhas.includes('curvas')?'suaves':'mistos'} — e da energia que você escolheu transmitir. A gola certa dialoga com as duas coisas ao mesmo tempo, não apenas alonga ou encurta.`;
+  }
+
+  if(papada.includes('Sim')||papada.includes('pouco')){
+    e1+=` Para a região do queixo, ${n}, o princípio é claro: a papada forma uma linha diagonal para trás. Qualquer linha passando por essa região que seja DIFERENTE dessa diagonal atenua. Pode ser vertical, pode ser diagonal para frente — o que importa é o contraste. Você tem várias opções de corte. A escolha é sua.`;
+  }
+
+  if(linhas.includes('retas')){
+    e1+=` Seus traços marcados comunicam autoridade naturalmente. Para potencializar: gola reta reforça sua presença. Para suavizar sem perder força: gola em V aberto ou diagonal. Mulheres com traços marcados tendem a rejeitar inconscientemente golas muito arredondadas — percebem como fraqueza. Nos brincos: estrutura ou alongados, não totalmente redondos.`;
+  } else if(linhas.includes('curvas')){
+    e1+=` Seus traços suaves comunicam delicadeza. Para equilibrar: gola reta ou V adiciona estrutura. Cuidado com excesso de curvas ao redor do rosto (golas arredondadas, brincos redondos) — somam volume de informação circular e intensificam a sensação de rosto arredondado.`;
+  } else {
+    e1+=` Com mistura de linhas, você tem flexibilidade. Gola em V funciona bem. Brincos que combinam estrutura com fluidez equilibram a composição.`;
+  }
+
+  let e2=`Onde o cabelo termina, ele adiciona uma linha invisível que direciona o olhar de quem te observa — especialmente de costas, onde você nunca se vê mas todos veem. Emagrecer muda o número na balança. Mas onde essa linha está posicionada no seu corpo só muda com intenção.`;
+
+  if(b.includes('Retângulo')){
+    e2+=` ${n}, para o seu biotipo retângulo, o objetivo é criar visualmente a cintura que a natureza não definiu. Uma linha em U ou V terminando na região da cintura é o mais estratégico: a linha converge para dentro, direciona o olhar para o centro e cria percepção de afunilamento. O quadril entra em evidência por contraste. E entenda uma coisa importante: para o seu biotipo, o cinto não é um acessório opcional — é uma ferramenta estrutural. Sem ele, a silhueta fica reta. Com ele, você cria o afunilamento que o corpo não tem naturalmente.`;
+  } else if(b.includes('Pêra')||b.includes('Triângulo /')){
+    e2+=` Para o seu biotipo triângulo, ${n}, o objetivo é equilibrar expandindo os ombros. ${comp.includes('Longo')?'Com cabelo longo, uma linha U ou V afina a cintura e você compensa com cores mais claras nos ombros — expandindo onde a linha do corte não alcança.':'Com cabelo curto ou médio, uma linha reta na altura do ombro espelha a linha reta que já existe no ombro, expandindo visualmente essa região.'}`;
+  } else if(b.includes('invertido')){
+    e2+=` Para o seu biotipo triângulo invertido, o objetivo é expandir a região inferior. Uma linha reta na altura da cintura ou quadril direciona o olhar horizontalmente para baixo, equilibrando os ombros largos. Evite U ou V terminando nos ombros — afunilariam onde você já é mais larga.`;
+  } else if(b.includes('Ampulheta')){
+    e2+=` ${n}, você tem o biotipo que todas as estratégias buscam criar. O trabalho é preservar. Linhas em U ou V reforçam o afunilamento natural da cintura. Evite linhas retas no centro do corpo — desfazem o efeito violão.`;
+  } else if(b.includes('Oval')){
+    e2+=` Para o seu biotipo oval, uma linha em U ou V cria percepção de cintura por convergência — direcionando o olhar para dentro e aproximando sua silhueta da ampulheta visualmente.`;
+  }
+
+  let e3=`A cor funciona como luz e sombra. Onde há luz, há expansão. Onde há sombra, há retração. Essa é a segunda ferramenta do protocolo — e a que completa ou destrói o que o corte construiu. A regra de ouro: linha e cor nunca podem trabalhar em direções opostas. Quando colidem, a cor vence.`;
+
+  if(b.includes('Retângulo')){
+    e3+=` Para o retângulo, ${n}, a técnica mais eficiente é usar tons parecidos no corpo inteiro com um cinto (ou detalhe mais escuro) marcando a cintura. O tom uniforme unifica a silhueta, e o cinto escuro retrai aquela região específica — o olhar interpreta como cintura definida. Essa combinação é o que transforma visualmente o retângulo em ampulheta. E aqui vale repetir: sempre que você usar roupas de baixo contraste (tons parecidos em cima e embaixo), o cinto é obrigatório. Ele é a ferramenta que cria a cintura que você quer ver no espelho. Roupas mais justas revelam o que existe.`;
+  } else if(b.includes('Pêra')||b.includes('Triângulo /')){
+    e3+=` Para o triângulo, claro em cima expande ombros, escuro em baixo retrai quadril. Evite claro no quadril e mechas claras terminando nos ombros — ombré nessa região amplia onde não deve.`;
+  } else if(b.includes('invertido')){
+    e3+=` Para o triângulo invertido, escuro em cima retrai ombros, claro em baixo expande. Cinto ou detalhe claro na parte inferior potencializa. Evite mechas claras nos ombros.`;
+  } else if(b.includes('Ampulheta')){
+    e3+=` Para a ampulheta, mantenha a cintura sempre em evidência. Contraste entre cima e baixo valoriza suas proporções.`;
+  } else if(b.includes('Oval')){
+    e3+=` Para o oval, a cor é sua principal ferramenta. Escuro central e claro lateral cria cintura por contraste de volumes. Listras verticais alongam. Evite estampas grandes no centro.`;
+  }
+
+  if(A.tom_pele&&A.tom_pele.includes('dourada')){
+    e3+=` Sobre o seu tom de pele quente, ${n}: o subtom dourado/oliva da sua pele governa todas as cores que encostam no seu rosto. Tons de cabelo como mel, dourado suave, cobre e castanho quente criam coesão visual — conversam com sua pele em vez de brigar com ela. Se quiser afirmar caráter, intensifique nos quentes (dourado intenso, cobre, mel) — sua pele ganha brilho e presença. Se quiser harmonia sofisticada, vá ao oposto: tons frios suaves (castanho acinzentado, chocolate frio) equilibram o calor natural da pele e transmitem serenidade. Nas roupas próximas ao rosto, a mesma lógica: terracota, mostarda e verde oliva potencializam; lavanda, rosa antigo e azul petróleo equilibram.`;
+  } else if(A.tom_pele&&A.tom_pele.includes('avermelhada')){
+    e3+=` Sobre o seu tom de pele fria, ${n}: o subtom rosado/azulado da sua pele precisa ser considerado em toda cor que encosta no rosto. Harmonia acontece com tons quentes suaves no cabelo (mel quente, cobre claro, castanho quente) que aquecem a pele sem criar conflito — e em roupas como areia, pêssego, coral suave. Caráter surge do oposto: tons frios intensos (preto azulado, loiro perolado, castanho acinzentado) no cabelo, combinados com roupas em vinho, azul marinho, esmeralda. Essas escolhas não apenas valorizam sua beleza — elas te posicionam visualmente com intenção.`;
+  } else if(A.tom_pele&&A.tom_pele.includes('negra')){
+    e3+=` Sobre o seu tom de pele, ${n}: peles negras e muito escuras carregam uma riqueza visual única e funcionam extraordinariamente bem com alto contraste. Cores vibrantes potencializam sua presença — vermelho, amarelo queimado, esmeralda, azul royal — e tons metálicos (dourado, bronze) criam uma aura de luxo. Evite tons muito apagados próximos ao rosto, porque eles retraem a intensidade natural da sua pele em vez de dialogar com ela. No cabelo, tanto tons escuros (preto profundo, chocolate intenso) quanto iluminações estratégicas (cobre, caramelo) funcionam bem — escolha baseada na energia que quer transmitir.`;
+  }
+
+  let e4=`${n}, cada linha que você adiciona à sua imagem transmite uma mensagem antes de você dizer uma palavra. O cabelo não é só estética — é comunicação. `;
+  if(energia.includes('Autoridade')){
+    e4+=`Cabelo liso e reto comunica estrutura, controle, estabilidade. Peças com caimento definido e cores com contraste controlado completam a mensagem. Você está construindo uma imagem que chega antes de você.`;
+  } else if(energia.includes('Afeto')){
+    e4+=`Cabelo ondulado com curvas comunica envolvência e afetividade. Com roupas formais transmite profissionalismo empático; com roupas que potencializam as curvas ganha sensualidade. O contexto define a mensagem — e você controla esse contexto.`;
+  } else if(energia.includes('Dinamismo')){
+    e4+=`Cabelo repicado com movimento comunica ousadia e uma personalidade que não para quieta. Assimetrias no corte e diagonais nas estampas reforçam essa energia. Evite o liso e reto demais — seria contraditório com quem você quer ser.`;
+  } else if(energia.includes('Sensualidade')){
+    e4+=`Cabelo ondulado com curvas bem definidas comunica sensualidade naturalmente. Mas existe um conceito que a maioria das mulheres nunca ouviu: diferente do que foi enraizado no inconsciente coletivo, cabelo curto ou preso NÃO é masculino. Pelo contrário — revela suas curvas. A nuca exposta espelha a curva da lombar, criando a sensação de um bumbum mais projetado para quem te observa de perfil. Aquele papo de que "homem não gosta de mulher de cabelo curto ou preso" é ego masculino disfarçado de preferência. Vem lá do inconsciente que cresceu assistindo desenhos do homem das cavernas arrastando a mulher pelos cabelos, totalmente submissa. Quando o homem vê uma mulher de cabelo curto ou preso, o inconsciente dele sente perda de poder, de dominância. Mas quando ele tira esse véu e para de ouvir o ego, ele finalmente percebe a real sensualidade da mulher — revelada pelas curvas que o cabelo longo cobria. Então, ${n}: a escolha de revelar ou cobrir o seu corpo através do cabelo é sua. E agora você sabe o que cada opção comunica de verdade.`;
+  }
+
+  e4+=` ${n}, a verdadeira liberdade de escolha não é ter muitas opções — é ter consciência do que cada escolha comunica. Você agora tem essa consciência. Você não precisa mais ser refém do espelho. Você virou a estrategista da sua própria imagem.`;
+
+  return `**Etapa 1 — Seu rosto**\n\n${e1}\n\n**Etapa 2 — Seu corpo**\n\n${e2}\n\n**Etapa 3 — Dieta do armário**\n\n${e3}\n\n**A energia da sua imagem**\n\n${e4}`;
+}
+
+// ==================== ENTREGA ====================
+
+async function entregar(){
+  await msg(`${A.nome}, seu Protocolo Dieta Visual está pronto ✦`,'bot',300);
+  await wait(500);
+
+  const box=document.createElement('div');
+  box.className='result';
+
+  const rostoLongo=A.percepcao_rosto&&A.percepcao_rosto.includes('longo');
+  const ladoIndicado=rostoLongo?A.lado_alto:A.lado_baixo;
+  const efeitoLado=rostoLongo?'equilibra as proporções do rosto longo':'cria linha ascendente que alonga';
+
+  const introHTML=`<div class="result-intro">
+    <h2>Protocolo Dieta Visual</h2>
+    <div class="sub">Personalizado para ${A.nome} · Método Cabelo Comando Visual</div>
+  </div>`;
+
+  const conceitoHTML=`<div class="conceito-box">
+    <strong>${A.nome}, guarde este princípio:</strong> Tudo são linhas e formas. Linha igual potencializa, linha oposta atenua. A verdadeira liberdade de escolha está em ter <strong>consciência</strong> do que você está escolhendo — reforçando o que valoriza em si e atenuando o que não está legal segundo a sua ótica.
+  </div>`;
+
+  // SVGs para cada seção
+  const svgRostoHTML=ladoIndicado&&ladoIndicado!=='indefinido'
+    ?`<div class="result-ilustra"><div class="subtitle">Assimetria Natural</div>${svgRostoAssimetria(ladoIndicado)}<div class="cap">Jogue para o lado ${ladoIndicado} — ${efeitoLado}</div></div>`
+    :`<div class="result-ilustra" style="background:#FFF8EC;border:1px dashed #C4973A"><div class="subtitle" style="color:#8B6914">Como Encontrar Sua Assimetria Natural</div><div style="text-align:left;font-size:12.5px;color:#3A2E20;line-height:1.7;padding:0.5rem 0.25rem"><strong>${A.nome}, faça este teste rápido:</strong><br/><br/>1. Pegue uma régua, lápis ou qualquer objeto reto<br/>2. Fique em frente ao espelho, olhando pra frente<br/>3. Posicione o objeto <strong>na horizontal</strong>, encostando no ápice (topo) das duas sobrancelhas ao mesmo tempo<br/>4. Observe: uma das sobrancelhas vai tocar o objeto primeiro — esse é o lado MAIS ALTO do seu rosto. O outro lado, que fica um pouco abaixo, é o lado MAIS BAIXO.<br/><br/>Toda mulher tem essa assimetria natural — é só uma questão de descobrir qual lado é qual. Depois de identificar, aplique o que está explicado abaixo: se o rosto parece longo, jogue o cabelo pro lado alto (equilibra); se parece largo/redondo, jogue pro lado baixo (alonga).</div></div>`;
+
+  const svgLinhasHTML=`<div class="result-ilustra"><div class="subtitle">Linhas do Rosto</div>${svgLinhasRosto()}<div class="cap">Cada tipo de linha comunica uma energia diferente</div></div>`;
+
+  const svgCabeloMeioHTML=A.cabelo_meio&&A.cabelo_meio.includes('Sim')
+    ?`<div class="result-ilustra"><div class="subtitle">Divisão do Cabelo</div>${svgCabeloMeio()}<div class="cap">Cabelo ao meio espelha a linha vertical do nariz</div></div>`:'';
+
+  const svgFranjaHTML='';
+
+  const svgGolaHTML=`<div class="result-ilustra"><div class="subtitle">A Gola como Extensão do Rosto</div>${svgGola()}<div class="cap">Distância da gola ao queixo define o efeito visual</div></div>`;
+
+  const svgPapadaHTML=A.papada&&(A.papada.includes('Sim')||A.papada.includes('pouco'))
+    ?`<div class="result-ilustra"><div class="subtitle">A Região do Queixo</div>${svgPapada()}<div class="cap">Qualquer linha diferente da diagonal da papada atenua</div></div>`:'';
+
+  const svgBiotipoHTML=A.biotipo?`<div class="result-ilustra" style="display:flex;align-items:center;gap:1rem;justify-content:center;flex-wrap:wrap;padding:1.25rem">${svgBiotipo(A.biotipo)}<div style="text-align:left;max-width:220px"><div style="font-size:13px;font-weight:600;color:var(--text-sec);margin-bottom:6px">Biotipo: ${A.biotipo}</div><div style="font-size:11.5px;color:var(--text-ter);line-height:1.55">${A.biotipo.includes('Retângulo')?'U ou V na cintura + cinto escuro marcando a cintura = ampulheta visual':A.biotipo.includes('Pêra')||A.biotipo.includes('Triângulo /')?'Linha reta no ombro → espelha e expande → equilibra com quadril':A.biotipo.includes('invertido')?'Linha reta no quadril → expande inferior → equilibra com ombros':A.biotipo.includes('Ampulheta')?'Preservar. U/V reforça. Evitar reta no centro do corpo':'U ou V → cria percepção de cintura por convergência visual'}</div></div></div>`:'';
+
+  const svgCortesHTML=`<div class="result-ilustra"><div class="subtitle">A Linha que o Corte Desenha</div>${svgCorpoCortes()}<div class="cap">Cada linha direciona o olhar e transforma a percepção da silhueta</div></div>`;
+
+  const svgCorHTML=`<div class="result-ilustra"><div class="subtitle">Cor como Luz e Sombra</div>${svgCorRoupas()}<div class="cap">Onde há luz expande · Onde há sombra retrai</div></div>`;
+
+  const svgEnergiaHTML=`<div class="result-ilustra"><div class="subtitle">A Energia das Formas no Fio</div>${svgEnergia()}<div class="cap">O comportamento do fio comunica antes de você falar</div></div>`;
+
+  const svgNucaHTML='';
+
+  const svgVolumeHTML=`<div class="result-ilustra"><div class="subtitle">Volume na Medida Certa</div>${svgVolumeProporção()}<div class="cap">O volume do cabelo em relação ao corpo define quem entra em evidência</div></div>`;
+
+  const svg5cmHTML=A.comprimento&&(A.comprimento.includes('Médio')||A.comprimento.includes('Longo'))
+    ?`<div class="result-ilustra"><div class="subtitle">Regra dos 5cm — John Frieda</div>${svg5cm()}<div class="cap">Meça do lóbulo da orelha ao queixo — menor que 5,7cm: cabelo curto favorece</div></div>`:'';
+
+  // Parse protocolo
+  const map={'Etapa 1':'r','Etapa 2':'c','Etapa 3':'v','energia':'e'};
+  const parts=A.plano.split(/\*\*([^*]+)\*\*/g);
+  let htmlContent='';
+  for(let i=0;i<parts.length;i++){
+    const t=parts[i].trim();
+    if(!t)continue;
+    if(i%2===1){
+      const cls=Object.entries(map).find(([k])=>t.toLowerCase().includes(k.toLowerCase()));
+      htmlContent+=`<h3 class="${cls?cls[1]:'r'}">${t}</h3>`;
+      if(t.includes('Etapa 1')){
+        htmlContent+=svgRostoHTML+svgLinhasHTML+svgCabeloMeioHTML+svgFranjaHTML+svgGolaHTML+svgPapadaHTML;
+      } else if(t.includes('Etapa 2')){
+        htmlContent+=svgBiotipoHTML+svgCortesHTML;
+      } else if(t.includes('Etapa 3')){
+        htmlContent+=svgCorHTML;
+      } else if(t.toLowerCase().includes('energia')){
+        htmlContent+=svgEnergiaHTML+svgNucaHTML;
+      }
+    } else {
+      t.split('\n\n').forEach(p=>{if(p.trim())htmlContent+=`<p>${p.trim()}</p>`;});
+    }
+  }
+
+  // Complementos educativos
+  const textoNucaSensualidade = A.comprimento&&A.comprimento.includes('Curto')
+    ? `<p><strong>A real sensualidade feminina e a sua nuca exposta, ${A.nome}:</strong> existe um conceito que precisa ser dito sem rodeios. Diferente do que foi enraizado no inconsciente coletivo da sociedade, cabelo curto ou preso NÃO é masculino — muito pelo contrário, revela suas curvas. A sua nuca exposta espelha a curva da lombar (logo acima do bumbum), gerando a sensação de um bumbum mais projetado para quem te observa de perfil. Aquele papo de que "homem não gosta de mulher de cabelo curto ou preso" vem do inconsciente coletivo da sociedade que cresceu vendo desenhos do homem das cavernas arrastando sua esposa pelos cabelos, totalmente submissa. Quando um homem vê uma mulher de cabelo curto ou preso, é como se ele perdesse poder e domínio sobre ela. Mas quando ele tira esse véu do inconsciente e para de ouvir seu ego, finalmente percebe a real sensualidade da mulher — revelada pelas curvas que o cabelo longo cobria. O seu cabelo curto não te torna menos feminina. Ele te revela de outro jeito.</p>`
+    : `<p><strong>A real sensualidade feminina, ${A.nome} — algo que você precisa saber:</strong> existe um conceito que precisa ser dito sem rodeios, mesmo que você ame seu cabelo longo. Cabelo curto ou preso NÃO é masculino. A crença contrária vem do inconsciente coletivo da sociedade que cresceu vendo desenhos do homem das cavernas arrastando sua esposa pelos cabelos, totalmente submissa. Por isso quando um homem vê uma mulher de cabelo curto ou preso, é como se ele perdesse poder e domínio sobre ela — e ele confunde esse desconforto com "não gostar". Mas quando ele tira esse véu do inconsciente e para de ouvir seu ego, finalmente percebe a real sensualidade que o cabelo curto revela: a nuca exposta espelha a curva da lombar, logo acima do bumbum, gerando a sensação de um bumbum mais projetado para quem observa de perfil. É conhecimento de reserva: você pode continuar com seu cabelo longo se é o que te agrada, mas agora sabe que o outro caminho também é um caminho de sensualidade — só que mais consciente, mais livre, mais sua.</p>`;
+
+  const complementosHTML=`
+    <h3 class="b">Complementos — Conhecimento Bônus</h3>
+    <p><strong>Volume na medida certa:</strong> Existe uma relação entre o volume do seu cabelo e o contexto geral do seu corpo. Se o cabelo tem pouco volume em relação ao corpo, o corpo entra em evidência. Se o cabelo tem volume em excesso, o cabelo é quem chama a atenção — e o corpo fica em segundo plano. Saber dosar isso é parte da consciência visual.</p>
+    ${svgVolumeHTML}
+    ${textoNucaSensualidade}
+    ${A.comprimento&&(A.comprimento.includes('Médio')||A.comprimento.includes('Longo'))?`<p><strong>A regra dos 5cm (John Frieda):</strong> ${A.nome}, se um dia você pensar em cortar curto, existe uma forma de saber se vai te valorizar. Pegue uma régua, posicione-a verticalmente na lateral do seu rosto, logo abaixo da orelha. Coloque um lápis na base do queixo, encostado na régua. Marque os centímetros. Se a medida for menor que 5,7cm, cabelos curtos favorecem. Se for igual ou maior, cabelos médios ou longos são uma escolha mais harmônica.</p>${svg5cmHTML}`:''}
+  `;
+
+  const fechamentoHTML=`
+    <div style="background:linear-gradient(135deg,#1C1410,#3A2810);color:#FAF7F2;border-radius:14px;padding:1.5rem 1.25rem;margin-top:1.5rem;text-align:center">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:500;color:#F0D080;margin-bottom:0.9rem;line-height:1.2">Chegou até aqui, ${A.nome}.</div>
+      <p style="font-size:13.5px;line-height:1.75;color:rgba(250,247,242,0.88);margin-bottom:0.9rem">Você acabou de sair do lugar onde a maioria das mulheres nunca sai: o da consciência visual sobre si mesma. O que você aprendeu aqui não é uma tendência, não é uma moda, não é um truque passageiro. São leis visuais que vão te acompanhar pro resto da vida — em toda foto, em toda compra de roupa, em toda visita ao salão, em todo espelho.</p>
+      <p style="font-size:13.5px;line-height:1.75;color:rgba(250,247,242,0.88);margin-bottom:0.9rem">A balança pode subir ou descer. O corpo pode mudar com os anos. Mas o que você construiu hoje é seu — pra sempre. E o mais importante: agora toda escolha que você fizer diante do espelho será uma escolha <strong style="color:#F0D080">consciente</strong>, não mais refém do acaso.</p>
+      <p style="font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:#F0D080;line-height:1.4;margin-top:1rem">"Você não precisava de mais esforço.<br/>Precisava de mais consciência.<br/>E agora, você a tem."</p>
+      <div style="width:40px;height:1px;background:rgba(196,151,58,0.5);margin:1rem auto 0"></div>
+      <p style="font-size:12px;color:rgba(250,247,242,0.6);margin-top:0.9rem;letter-spacing:0.03em">Com carinho,<br/><span style="color:#F0D080">Equipe Dieta Visual</span></p>
+    </div>
+  `;
+
+  box.innerHTML=introHTML+conceitoHTML+htmlContent+complementosHTML+fechamentoHTML+`<div class="btns-wrap">
+<button class="save-btn" onclick="gerarPDF()">⬇ Baixar meu protocolo em PDF</button>
+<div class="btns-divider">compartilhar</div>
+<a class="btn-whats" href="https://wa.me/?text=Acabei%20de%20fazer%20minha%20Dieta%20Visual%20e%20recebi%20um%20protocolo%20personalizado%20de%20cabelo%20e%20roupas!%20Você%20precisa%20fazer%20também%20👉%20ossegredosdaimagem.com/ev" target="_blank">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+Indicar para uma amiga
+</a>
+<div class="btns-divider">quer fazer outra análise?</div>
+<a class="btn-upsell" href="https://pay.kiwify.com.br/y6NvqHK" target="_blank">🎁 Presentear uma amiga — R$ 27</a>
+<div class="feedback-card" id="fb-card">
+<h4>💬 Sua opinião importa</h4>
+<div class="fb-sub">Conta pra gente o que você achou do seu Protocolo Dieta Visual. Seu feedback pode ajudar outras mulheres — mas só se você autorizar.</div>
+<input type="text" id="fb-nome" placeholder="Seu nome ou iniciais (opcional)"/>
+<textarea id="fb-texto" placeholder="Conta pra gente o que achou..."></textarea>
+<div class="fb-auth">
+<label><input type="radio" name="fb-autoriz" value="publicar-nome" checked/> Pode publicar com meu primeiro nome</label>
+<label><input type="radio" name="fb-autoriz" value="publicar-anonimo"/> Pode publicar anonimamente</label>
+<label><input type="radio" name="fb-autoriz" value="so-voce"/> É só pra vocês verem</label>
+</div>
+<button class="btn-fb" onclick="enviarFeedback()">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+Enviar feedback pelo WhatsApp
+</button>
+</div>
+</div>`;
+
+  ch().appendChild(box);ch().scrollTop=99999;
+  await wait(700);
+  await msg(`Salve em PDF e leve ao seu cabeleireiro, ${A.nome}. Ele vai entender exatamente o que fazer — sem achismo, sem o famoso "faz o que achar melhor". 🌿`,'bot',300);
+}
+
+// ==================== PDF ====================
+
+function gerarPDF(){
+  try{
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pageW=doc.internal.pageSize.getWidth(),pageH=doc.internal.pageSize.getHeight();
+    const margin=20,maxW=pageW-margin*2;let y=20;
+    doc.setFillColor(28,20,16);doc.rect(0,0,pageW,32,'F');
+    doc.setTextColor(250,247,242);doc.setFontSize(22);doc.setFont('helvetica','bold');
+    doc.text('Dieta Visual',margin,16);
+    doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(196,151,58);
+    doc.text('PROTOCOLO PERSONALIZADO · MÉTODO CABELO COMANDO VISUAL',margin,23);
+    doc.setFontSize(10);doc.setTextColor(250,247,242);
+    doc.text(`Preparado para: ${A.nome}`,margin,29);
+    const hoje=new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+    doc.setFontSize(8);doc.setTextColor(196,151,58);
+    doc.text(hoje,pageW-margin,29,{align:'right'});
+    y=42;
+    const result=document.querySelector('.result');
+    if(!result){alert('Complete o quiz primeiro.');return;}
+    result.querySelectorAll('h3,p,.conceito-box').forEach(el=>{
+      if(el.tagName==='H3'){
+        if(y>pageH-40){doc.addPage();y=20;}
+        y+=6;
+        const tt=el.textContent.trim();
+        if(tt.includes('Etapa 1'))doc.setFillColor(238,237,254);
+        else if(tt.includes('Etapa 2'))doc.setFillColor(225,245,238);
+        else if(tt.includes('Etapa 3'))doc.setFillColor(250,238,218);
+        else if(tt.toLowerCase().includes('energia'))doc.setFillColor(251,234,240);
+        else doc.setFillColor(240,235,228);
+        doc.roundedRect(margin,y,maxW,11,2,2,'F');
+        if(tt.includes('Etapa 1'))doc.setTextColor(60,52,137);
+        else if(tt.includes('Etapa 2'))doc.setTextColor(8,80,65);
+        else if(tt.includes('Etapa 3'))doc.setTextColor(99,56,6);
+        else if(tt.toLowerCase().includes('energia'))doc.setTextColor(139,34,82);
+        else doc.setTextColor(74,62,44);
+        doc.setFontSize(12);doc.setFont('helvetica','bold');doc.text(tt,margin+4,y+7.5);y+=16;
+      } else if(el.classList.contains('conceito-box')){
+        const tx=el.textContent.trim();if(!tx)return;
+        doc.setFillColor(255,248,236);
+        const lines=doc.splitTextToSize(tx,maxW-8),bh=lines.length*4.8+6;
+        if(y+bh>pageH-20){doc.addPage();y=20;}
+        doc.roundedRect(margin,y,maxW,bh,2,2,'F');
+        doc.setFillColor(196,151,58);doc.rect(margin,y,1.5,bh,'F');
+        doc.setTextColor(58,46,32);doc.setFontSize(9);doc.setFont('helvetica','italic');
+        doc.text(lines,margin+5,y+5);y+=bh+4;
+      } else if(el.tagName==='P'){
+        const tx=el.textContent.trim();if(!tx)return;
+        doc.setTextColor(58,46,32);doc.setFontSize(10);doc.setFont('helvetica','normal');
+        const lines=doc.splitTextToSize(tx,maxW),bh=lines.length*5.5;
+        if(y+bh>pageH-20){doc.addPage();y=20;}
+        doc.text(lines,margin,y);y+=bh+4;
+      }
+    });
+    const tp=doc.internal.getNumberOfPages();
+    for(let i=1;i<=tp;i++){
+      doc.setPage(i);doc.setDrawColor(232,221,208);
+      doc.line(margin,pageH-14,pageW-margin,pageH-14);
+      doc.setFontSize(7.5);doc.setTextColor(122,106,84);doc.setFont('helvetica','normal');
+      doc.text(`${A.nome} · ossegredosdaimagem.com · Protocolo Dieta Visual`,margin,pageH-8);
+      doc.text(`${i}/${tp}`,pageW-margin,pageH-8,{align:'right'});
+    }
+    doc.save(`Protocolo-Dieta-Visual-${A.nome}.pdf`);
+  }catch(err){
+    alert('Para salvar como PDF: na janela que vai abrir, escolha "Salvar como PDF".');
+    window.print();
+  }
+}
+
+function enviarFeedback(){
+  const nome=document.getElementById('fb-nome').value.trim()||'Anônima';
+  const texto=document.getElementById('fb-texto').value.trim();
+  const autorizRadio=document.querySelector('input[name="fb-autoriz"]:checked');
+  const autoriz=autorizRadio?autorizRadio.value:'so-voce';
+  if(texto.length<10){alert('Por favor, escreva um feedback um pouco maior 💛');return;}
+  let autorizTxt='';
+  if(autoriz==='publicar-nome')autorizTxt='✅ Pode publicar com meu primeiro nome';
+  else if(autoriz==='publicar-anonimo')autorizTxt='✅ Pode publicar anonimamente';
+  else autorizTxt='🔒 É só pra vocês verem';
+  const msg=`*💬 Novo feedback — Protocolo Dieta Visual*%0A%0A*Nome:* ${encodeURIComponent(nome)}%0A*Autorização:* ${encodeURIComponent(autorizTxt)}%0A*Biotipo:* ${encodeURIComponent(A.biotipo||'-')}%0A*Energia escolhida:* ${encodeURIComponent(A.energia||'-')}%0A%0A*Depoimento:*%0A${encodeURIComponent(texto)}`;
+  const phone='5547992883177';
+  const url=`https://wa.me/${phone}?text=${msg}`;
+  window.open(url,'_blank');
+  const card=document.getElementById('fb-card');
+  card.innerHTML='<div class="fb-success">✨ Obrigado pelo seu feedback!<br><span style="font-size:12px;color:var(--text-ter);font-weight:400">Sua opinião ajuda o método a crescer.</span></div>';
+}
+
+step('welcome');
+</script>
+</body>
+</html>
